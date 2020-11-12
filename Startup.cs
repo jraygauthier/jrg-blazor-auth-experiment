@@ -1,3 +1,4 @@
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -44,13 +45,36 @@ namespace blazor_auth_individual_experiment
             })
             .AddIdentityCookies(o => { });
 
-            var identityBuilder = services.AddIdentityCore<IdentityUser>(o =>
+            // NOTE: jrg: Expand
+            // var identityBuilder = services.AddIdentityCore<IdentityUser>(o =>
+            // {
+            //     o.Stores.MaxLengthForKeys = 128;
+            //     o.SignIn.RequireConfirmedAccount = true;
+            // });
+            // Services identity depends on
+            services.AddOptions().AddLogging();
+
+            // Services used by identity
+            services.AddScoped<IUserValidator<IdentityUser>, UserValidator<IdentityUser>>();
+            services.AddScoped<IPasswordValidator<IdentityUser>, PasswordValidator<IdentityUser>>();
+            services.AddScoped<IPasswordHasher<IdentityUser>, PasswordHasher<IdentityUser>>();
+            services.AddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
+            services.AddScoped<IUserConfirmation<IdentityUser>, DefaultUserConfirmation<IdentityUser>>();
+            // No interface for the error describer so we can add errors without rev'ing the interface
+            services.AddScoped<IdentityErrorDescriber>();
+            services.AddScoped<IUserClaimsPrincipalFactory<IdentityUser>, UserClaimsPrincipalFactory<IdentityUser>>();
+            services.AddScoped<UserManager<IdentityUser>>();
+
+            Action<IdentityOptions> setupAction = o =>
             {
                 o.Stores.MaxLengthForKeys = 128;
                 o.SignIn.RequireConfirmedAccount = true;
-            });
+            };
+            services.Configure(setupAction);
+
 
             // NOTE: jrg: Expand (WIP, use overrides below instead)
+            var identityBuilder = new IdentityBuilder(typeof(IdentityUser), services);
             identityBuilder.AddDefaultUI();
 
             // NOTE: jrg: Expand
