@@ -16,6 +16,8 @@ using Microsoft.Extensions.Hosting;
 using blazor_auth_individual_experiment.Areas.Identity;
 using blazor_auth_individual_experiment.Data;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace blazor_auth_individual_experiment
 {
@@ -54,8 +56,15 @@ namespace blazor_auth_individual_experiment
                 o.SignIn.RequireConfirmedAccount = true;
             })
                 .AddDefaultUI()
-                .AddDefaultTokenProviders()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddDefaultTokenProviders();
+
+            // NOTE: jrg: Expand
+            //   .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddScoped<IUserStore<IdentityUser>, UserStore<IdentityUser, IdentityRole, ApplicationDbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>>();
+            services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext, string, IdentityUserRole<string>, IdentityRoleClaim<string>>>();
+
+            // NOTE: jrg: Could also have been:
+            // services.AddScoped<IUserStore<IdentityUser>, UserOnlyStore<IdentityUser, ApplicationDbContext, string, IdentityUserClaim<string>, IdentityUserLogin<string>, IdentityUserToken<string>>>();
 
 
             services.AddRazorPages();
