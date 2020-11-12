@@ -33,97 +33,10 @@ namespace blazor_auth_individual_experiment
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection")));
 
-
-            // NOTE: jrg: Expand.
+            // NOTE: jrg: Use the expanded version instead of original.
             // services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
             //    .AddEntityFrameworkStores<ApplicationDbContext>();
-
-            services.AddAuthentication(o =>
-            {
-                o.DefaultScheme = IdentityConstants.ApplicationScheme;
-                o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            })
-            .AddIdentityCookies(o => { });
-
-            // NOTE: jrg: Expand
-            // var identityBuilder = services.AddIdentityCore<IdentityUser>(o =>
-            // {
-            //     o.Stores.MaxLengthForKeys = 128;
-            //     o.SignIn.RequireConfirmedAccount = true;
-            // });
-            // Services identity depends on
-            services.AddOptions().AddLogging();
-
-            // Services used by identity
-            services.AddScoped<IUserValidator<IdentityUser>, UserValidator<IdentityUser>>();
-            services.AddScoped<IPasswordValidator<IdentityUser>, PasswordValidator<IdentityUser>>();
-            services.AddScoped<IPasswordHasher<IdentityUser>, PasswordHasher<IdentityUser>>();
-            services.AddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
-            services.AddScoped<IUserConfirmation<IdentityUser>, DefaultUserConfirmation<IdentityUser>>();
-            // No interface for the error describer so we can add errors without rev'ing the interface
-            services.AddScoped<IdentityErrorDescriber>();
-            services.AddScoped<IUserClaimsPrincipalFactory<IdentityUser>, UserClaimsPrincipalFactory<IdentityUser>>();
-            services.AddScoped<UserManager<IdentityUser>>();
-
-            Action<IdentityOptions> setupAction = o =>
-            {
-                o.Stores.MaxLengthForKeys = 128;
-                o.SignIn.RequireConfirmedAccount = true;
-            };
-            services.Configure(setupAction);
-
-
-            // NOTE: jrg: Expand (WIP, use overrides below instead)
-            var identityBuilder = new IdentityBuilder(typeof(IdentityUser), services);
-            identityBuilder.AddDefaultUI();
-
-            // NOTE: jrg: Expand
-            // identityBuilder
-            //     .AddSignInManager();
-            services.AddHttpContextAccessor();
-            services.AddScoped<ISecurityStampValidator, SecurityStampValidator<IdentityUser>>();
-            services.AddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<IdentityUser>>();
-            services.AddScoped<SignInManager<IdentityUser>>();
-
-            // TODO: For some reason our own `MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager`
-            // is unable to properly load the UI. This is why we kept the `AddDefaultUI`
-            // and override its components.
-            // services
-            //     .AddMvc()
-            //         .ConfigureApplicationPartManager(partManager =>
-            //         {
-            //             MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager(partManager);
-            //         });
-            services
-                .ConfigureOptions<MyIdentityDefaultUIConfigureOptions<IdentityUser>>()
-                .AddTransient<IEmailSender, MyEmailSender>();
-
-            // NOTE: jrg: Expand
-            // .AddDefaultTokenProviders()
-            identityBuilder
-                .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>(TokenOptions.DefaultProvider)
-                .AddTokenProvider<PhoneNumberTokenProvider<IdentityUser>>(TokenOptions.DefaultEmailProvider)
-                .AddTokenProvider<EmailTokenProvider<IdentityUser>>(TokenOptions.DefaultPhoneProvider)
-                .AddTokenProvider<AuthenticatorTokenProvider<IdentityUser>>(TokenOptions.DefaultAuthenticatorProvider);
-
-
-            // NOTE: jrg: Expand
-            //   .AddEntityFrameworkStores<ApplicationDbContext>();
-            services.AddScoped<IUserStore<IdentityUser>, UserStore<IdentityUser, IdentityRole, ApplicationDbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>>();
-            services.AddScoped<IRoleStore<IdentityRole>, RoleStore<IdentityRole, ApplicationDbContext, string, IdentityUserRole<string>, IdentityRoleClaim<string>>>();
-
-            // NOTE: jrg: Could also have been:
-            // services.AddScoped<IUserStore<IdentityUser>, UserOnlyStore<IdentityUser, ApplicationDbContext, string, IdentityUserClaim<string>, IdentityUserLogin<string>, IdentityUserToken<string>>>();
-
-
-            services.AddRazorPages();
-            services.AddServerSideBlazor();
-
-
-            // NOTE: jrg: Simplify.
-            // services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
-            services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
-
+            services.AddMyExpandedIdentityReplica<IdentityUser, IdentityRole, ApplicationDbContext, string>();
 
             services.AddScoped<WeatherForecastService>();
         }
