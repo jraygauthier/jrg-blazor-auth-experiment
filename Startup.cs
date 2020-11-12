@@ -16,7 +16,6 @@ using Microsoft.Extensions.Hosting;
 using blazor_auth_individual_experiment.Areas.Identity;
 using blazor_auth_individual_experiment.Data;
 using Microsoft.AspNetCore.Components.Server;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace blazor_auth_individual_experiment
