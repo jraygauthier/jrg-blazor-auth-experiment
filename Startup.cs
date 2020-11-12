@@ -56,7 +56,13 @@ namespace blazor_auth_individual_experiment
                 o.SignIn.RequireConfirmedAccount = true;
             })
                 .AddDefaultUI()
-                .AddDefaultTokenProviders();
+                // NOTE: jrg: Expand
+                // .AddDefaultTokenProviders()
+                .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>(TokenOptions.DefaultProvider)
+                .AddTokenProvider<PhoneNumberTokenProvider<IdentityUser>>(TokenOptions.DefaultEmailProvider)
+                .AddTokenProvider<EmailTokenProvider<IdentityUser>>(TokenOptions.DefaultPhoneProvider)
+                .AddTokenProvider<AuthenticatorTokenProvider<IdentityUser>>(TokenOptions.DefaultAuthenticatorProvider);
+
 
             // NOTE: jrg: Expand
             //   .AddEntityFrameworkStores<ApplicationDbContext>();
