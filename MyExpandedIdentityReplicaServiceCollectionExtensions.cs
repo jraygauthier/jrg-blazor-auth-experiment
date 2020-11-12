@@ -14,6 +14,20 @@ namespace blazor_auth_individual_experiment
 {
     static class MyExpandedIdentityReplicaServiceCollectionExtensions
     {
+        public static IServiceCollection AddMyTokenProvider<TProvider, TUser>(
+                this IServiceCollection services, string providerName)
+            where TUser : class
+            where TProvider : class, IUserTwoFactorTokenProvider<TUser>
+        {
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.Tokens.ProviderMap[providerName] = new TokenProviderDescriptor(typeof(TProvider));
+            });
+            services.AddTransient<TProvider>();
+
+            return services;
+        }
+
         public static IServiceCollection AddMyExpandedIdentityReplica<TUser, TRole, TContext, TKey>(
                 this IServiceCollection services)
             where TUser : IdentityUser<TKey>
@@ -67,15 +81,15 @@ namespace blazor_auth_individual_experiment
             // TODO: For some reason our expanded version of `AddMyExpandedIdentityUI`
             // has trouble loading UI components. This is why we still need
             // the `AddDefaultUI` call above.
-            services.AddMyExpandedIdentityUI<TUser>();
+            // services.AddMyExpandedIdentityUI<TUser>();
 
             // NOTE: jrg: Expand
             // .AddDefaultTokenProviders()
-            identityBuilder
-                .AddTokenProvider<DataProtectorTokenProvider<TUser>>(TokenOptions.DefaultProvider)
-                .AddTokenProvider<PhoneNumberTokenProvider<TUser>>(TokenOptions.DefaultEmailProvider)
-                .AddTokenProvider<EmailTokenProvider<TUser>>(TokenOptions.DefaultPhoneProvider)
-                .AddTokenProvider<AuthenticatorTokenProvider<TUser>>(TokenOptions.DefaultAuthenticatorProvider);
+            services
+                .AddMyTokenProvider<DataProtectorTokenProvider<TUser>, TUser>(TokenOptions.DefaultProvider)
+                .AddMyTokenProvider<PhoneNumberTokenProvider<TUser>, TUser>(TokenOptions.DefaultEmailProvider)
+                .AddMyTokenProvider<EmailTokenProvider<TUser>, TUser>(TokenOptions.DefaultPhoneProvider)
+                .AddMyTokenProvider<AuthenticatorTokenProvider<TUser>, TUser>(TokenOptions.DefaultAuthenticatorProvider);
 
 
             // NOTE: jrg: Expand
