@@ -50,10 +50,17 @@ namespace blazor_auth_individual_experiment
                 o.SignIn.RequireConfirmedAccount = true;
             });
 
-            // NOTE: jrg: Expand
+            // NOTE: jrg: Expand (WIP, use overrides below instead)
             identityBuilder.AddDefaultUI();
-            identityBuilder
-                .AddSignInManager();
+
+            // NOTE: jrg: Expand
+            // identityBuilder
+            //     .AddSignInManager();
+            services.AddHttpContextAccessor();
+            services.AddScoped<ISecurityStampValidator, SecurityStampValidator<IdentityUser>>();
+            services.AddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<IdentityUser>>();
+            services.AddScoped<SignInManager<IdentityUser>>();
+
             // TODO: For some reason our own `MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager`
             // is unable to properly load the UI. This is why we kept the `AddDefaultUI`
             // and override its components.
