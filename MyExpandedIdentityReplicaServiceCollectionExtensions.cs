@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using blazor_auth_individual_experiment.Areas.Identity;
 
 namespace blazor_auth_individual_experiment
 {
@@ -63,27 +64,10 @@ namespace blazor_auth_individual_experiment
             // NOTE: jrg: Expand (WIP, use overrides below instead)
             var identityBuilder = new IdentityBuilder(typeof(TUser), services);
             identityBuilder.AddDefaultUI();
-
-            // NOTE: jrg: Expand
-            // identityBuilder
-            //     .AddSignInManager();
-            services.AddHttpContextAccessor();
-            services.AddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
-            services.AddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
-            services.AddScoped<SignInManager<TUser>>();
-
-            // TODO: For some reason our own `MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager`
-            // is unable to properly load the UI. This is why we kept the `AddDefaultUI`
-            // and override its components.
-            // services
-            //     .AddMvc()
-            //         .ConfigureApplicationPartManager(partManager =>
-            //         {
-            //             MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager(partManager);
-            //         });
-            services
-                .ConfigureOptions<MyIdentityDefaultUIConfigureOptions<TUser>>()
-                .AddTransient<IEmailSender, MyEmailSender>();
+            // TODO: For some reason our expanded version of `AddMyExpandedIdentityUI`
+            // has trouble loading UI components. This is why we still need
+            // the `AddDefaultUI` call above.
+            services.AddMyExpandedIdentityUI<TUser>();
 
             // NOTE: jrg: Expand
             // .AddDefaultTokenProviders()
@@ -108,8 +92,8 @@ namespace blazor_auth_individual_experiment
 
 
             // NOTE: jrg: Simplify.
-            // services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<TUser>>();
-            services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+            services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<TUser>>();
+            // services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
             return services;
         }

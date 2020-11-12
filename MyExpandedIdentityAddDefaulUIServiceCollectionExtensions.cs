@@ -135,8 +135,7 @@ namespace blazor_auth_individual_experiment
         }
     }
 
-
-    class MyIdentityBuilderUIExtensions
+    static class MyExpandedIdentityAddDefaulUIServiceCollectionExtensions
     {
         // NOTE: jrg: From `src/Identity/UI/src/IdentityBuilderUIExtensions.cs::AddRelatedParts`
         public static void ConfigureApplicationPartManager(ApplicationPartManager partManager)
@@ -149,6 +148,9 @@ namespace blazor_auth_individual_experiment
 
             // From `_assemblyMap[UIFramework.Bootstrap4]`.
             var selectedFrameworkAssembly = "Microsoft.AspNetCore.Identity.UI.Views.V4";
+
+
+            // manager.ApplicationParts.Add(part)
 
             foreach (var kvp in relatedParts)
             {
@@ -196,6 +198,34 @@ namespace blazor_auth_individual_experiment
                     }
                 }
             }
+        }
+
+        public static IServiceCollection AddMyExpandedIdentityUI<TUser>(
+                this IServiceCollection services)
+            where TUser : class
+        {
+            // NOTE: jrg: Expand
+            // identityBuilder
+            //     .AddSignInManager();
+            services.AddHttpContextAccessor();
+            services.AddScoped<ISecurityStampValidator, SecurityStampValidator<TUser>>();
+            services.AddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
+            services.AddScoped<SignInManager<TUser>>();
+
+            // TODO: For some reason our own `ConfigureApplicationPartManager`
+            // is unable to properly load the UI. This is why we kept the `AddDefaultUI`
+            // and override its components.
+            services
+                .AddMvc()
+                    .ConfigureApplicationPartManager(partManager =>
+                    {
+                        ConfigureApplicationPartManager(partManager);
+                    });
+            services
+                .ConfigureOptions<MyIdentityDefaultUIConfigureOptions<TUser>>()
+                .AddTransient<IEmailSender, MyEmailSender>();
+
+            return services;
         }
 
     }
