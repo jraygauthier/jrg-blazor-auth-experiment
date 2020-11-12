@@ -1,22 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using blazor_auth_individual_experiment.Areas.Identity;
 using blazor_auth_individual_experiment.Data;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.Identity.UI.V4.Pages;
 
 namespace blazor_auth_individual_experiment
 {
@@ -49,14 +44,32 @@ namespace blazor_auth_individual_experiment
             })
             .AddIdentityCookies(o => { });
 
-            services.AddIdentityCore<IdentityUser>(o =>
+            var identityBuilder = services.AddIdentityCore<IdentityUser>(o =>
             {
                 o.Stores.MaxLengthForKeys = 128;
                 o.SignIn.RequireConfirmedAccount = true;
-            })
-                .AddDefaultUI()
-                // NOTE: jrg: Expand
-                // .AddDefaultTokenProviders()
+            });
+
+            // NOTE: jrg: Expand
+            identityBuilder.AddDefaultUI();
+            identityBuilder
+                .AddSignInManager();
+            // TODO: For some reason our own `MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager`
+            // is unable to properly load the UI. This is why we kept the `AddDefaultUI`
+            // and override its components.
+            // services
+            //     .AddMvc()
+            //         .ConfigureApplicationPartManager(partManager =>
+            //         {
+            //             MyIdentityBuilderUIExtensions.ConfigureApplicationPartManager(partManager);
+            //         });
+            services
+                .ConfigureOptions<MyIdentityDefaultUIConfigureOptions<IdentityUser>>()
+                .AddTransient<IEmailSender, MyEmailSender>();
+
+            // NOTE: jrg: Expand
+            // .AddDefaultTokenProviders()
+            identityBuilder
                 .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>(TokenOptions.DefaultProvider)
                 .AddTokenProvider<PhoneNumberTokenProvider<IdentityUser>>(TokenOptions.DefaultEmailProvider)
                 .AddTokenProvider<EmailTokenProvider<IdentityUser>>(TokenOptions.DefaultPhoneProvider)
@@ -76,7 +89,7 @@ namespace blazor_auth_individual_experiment
             services.AddServerSideBlazor();
 
 
-            // NOTE: jrg: Simply.
+            // NOTE: jrg: Simplify.
             // services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
 
