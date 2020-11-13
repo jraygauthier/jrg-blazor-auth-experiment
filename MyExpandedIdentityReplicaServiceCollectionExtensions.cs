@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using blazor_auth_individual_experiment.Data;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using blazor_auth_individual_experiment.Areas.Identity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace blazor_auth_individual_experiment
 {
@@ -45,7 +44,30 @@ namespace blazor_auth_individual_experiment
                 o.DefaultScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
             })
-            .AddIdentityCookies(o => { });
+            // NOTE: jrg: Expand.
+            // .AddIdentityCookies(o => { });
+                .AddCookie(IdentityConstants.ApplicationScheme, o =>
+                {
+                    o.LoginPath = new PathString("/Account/Login");
+                    o.Events = new CookieAuthenticationEvents
+                    {
+                        OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
+                    };
+                })
+                .AddCookie(IdentityConstants.ExternalScheme, o =>
+                {
+                    o.Cookie.Name = IdentityConstants.ExternalScheme;
+                    o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                })
+                .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
+                {
+                    o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
+                })
+                .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
+                {
+                    o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+                    o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                });
 
             // NOTE: jrg: Expand
             // var identityBuilder = services.AddIdentityCore<TUser>(o =>
