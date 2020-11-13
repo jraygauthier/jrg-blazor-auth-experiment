@@ -7,7 +7,9 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using blazor_auth_individual_experiment.Areas.Identity;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace blazor_auth_individual_experiment
 {
@@ -39,13 +41,37 @@ namespace blazor_auth_individual_experiment
             // services.AddDefaultIdentity<TUser>(options => options.SignIn.RequireConfirmedAccount = true)
             //    .AddEntityFrameworkStores<TContext>();
 
-            services.AddAuthentication(o =>
+            // NOTE: jrg: Expand.
+            // services.AddAuthentication(o =>
+            // {
+            //     o.DefaultScheme = IdentityConstants.ApplicationScheme;
+            //     o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+            // })
+
+            // NOTE: jrg: Expand.
+            // services.AddAuthenticationCore();
+            services.TryAddScoped<IAuthenticationService, AuthenticationService>();
+            services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
+            services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
+            services.TryAddSingleton<IAuthenticationSchemeProvider, AuthenticationSchemeProvider>();
+            // NOTE: jrg end `AddAuthenticationCore` expansion.
+
+            services.AddDataProtection();
+            services.AddWebEncoders();
+            services.TryAddSingleton<ISystemClock, SystemClock>();
+            services.Configure<AuthenticationOptions>(o =>
             {
                 o.DefaultScheme = IdentityConstants.ApplicationScheme;
                 o.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            })
+            });
+
+            var authBuilder = new AuthenticationBuilder(services);
+            // NOTE: jrg: end `AddAuthentication` expansion.
+
+            authBuilder
             // NOTE: jrg: Expand.
             // .AddIdentityCookies(o => { });
+                // "Identity.Application"
                 .AddCookie(IdentityConstants.ApplicationScheme, o =>
                 {
                     o.LoginPath = new PathString("/Account/Login");
@@ -54,20 +80,24 @@ namespace blazor_auth_individual_experiment
                         OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                     };
                 })
+                // "Identity.External"
                 .AddCookie(IdentityConstants.ExternalScheme, o =>
                 {
                     o.Cookie.Name = IdentityConstants.ExternalScheme;
                     o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
                 })
+                // "Identity.TwoFactorRememberMe"
                 .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
                 {
                     o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
                 })
+                // "Identity.TwoFactorUserId"
                 .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
                 {
                     o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
                     o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
                 });
+            // NOTE: jrg: End `AddIdentityCookies` expansion.
 
             // NOTE: jrg: Expand
             // var identityBuilder = services.AddIdentityCore<TUser>(o =>
@@ -89,21 +119,22 @@ namespace blazor_auth_individual_experiment
             services.AddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser>>();
             services.AddScoped<UserManager<TUser>>();
 
-            Action<IdentityOptions> setupAction = o =>
+            services.Configure<IdentityOptions>(o =>
             {
                 o.Stores.MaxLengthForKeys = 128;
                 o.SignIn.RequireConfirmedAccount = true;
-            };
-            services.Configure(setupAction);
+            });
 
+            var identityBuilder = new IdentityBuilder(typeof(TUser), services);
+            // NOTE: jrg: End `AddIdentityCore` expansion.
 
             // NOTE: jrg: Expand (WIP, use overrides below instead)
-            var identityBuilder = new IdentityBuilder(typeof(TUser), services);
             identityBuilder.AddDefaultUI();
             // TODO: For some reason our expanded version of `AddMyExpandedIdentityUI`
             // has trouble loading UI components. This is why we still need
             // the `AddDefaultUI` call above.
             // services.AddMyExpandedIdentityUI<TUser>();
+            // NOTE: jrg: End `AddDefaultUI` expansion.
 
             // NOTE: jrg: Expand
             // .AddDefaultTokenProviders()
@@ -112,7 +143,9 @@ namespace blazor_auth_individual_experiment
                 .AddMyTokenProvider<PhoneNumberTokenProvider<TUser>, TUser>(TokenOptions.DefaultEmailProvider)
                 .AddMyTokenProvider<EmailTokenProvider<TUser>, TUser>(TokenOptions.DefaultPhoneProvider)
                 .AddMyTokenProvider<AuthenticatorTokenProvider<TUser>, TUser>(TokenOptions.DefaultAuthenticatorProvider);
+            // NOTE: jrg: End `AddDefaultTokenProviders` expansion.
 
+            // NOTE: jrg: End `AddDefaultIdentity` expansion.
 
             // NOTE: jrg: Expand
             //   .AddEntityFrameworkStores<TContext>();
@@ -121,7 +154,7 @@ namespace blazor_auth_individual_experiment
 
             // NOTE: jrg: Could also have been:
             // services.AddScoped<IUserStore<TUser>, UserOnlyStore<TUser, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>>();
-
+            // NOTE: jrg: End `AddEntityFrameworkStores` expansion.
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
