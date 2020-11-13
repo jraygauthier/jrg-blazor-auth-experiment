@@ -27,12 +27,13 @@
     private SignInManager<IdentityUser> SignInManager { get; set; }
     public FormAuthenticationData FormData { get; set; } = new FormAuthenticationData();
 
-    public async Task OnSubmit()
+    public Task OnSubmit()
     {
         var query = $"?email={Uri.EscapeDataString(FormData.Email)}&" +
             $"password={Uri.EscapeDataString(FormData.Password)}&" +
             $"rememberMe={Uri.EscapeDataString(FormData.RememberMe.ToString())}";
 
-        NavigationManager.NavigateTo("/Login/SignIn" + query, forceLoad: true);
+        NavigationManager.NavigateTo("/CustomIdentity/SignIn" + query, forceLoad: true);
+        return Task.CompletedTask;
     }
 }

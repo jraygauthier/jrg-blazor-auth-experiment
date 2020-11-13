@@ -10,12 +10,17 @@ using Microsoft.AspNetCore.Identity;
 
 namespace blazor_auth_individual_experiment
 {
+    // This is required as the sign in mgr needs to set context cookies / headers and
+    // this can only be done on server-side. When you attempt to use it
+    // blazor side (as part of signalr connection) it fails saying that you
+    // cannot write to header at this time (streaming the response is ongoing).
+    // TODO: Reference to particular error message and stackoverflow answers.
     [Route("[controller]/[action]")]
-    public class LoginController : Controller
+    public class CustomIdentityController : Controller
     {
         SignInManager<IdentityUser> _signInMgr;
 
-        public LoginController(SignInManager<IdentityUser> signInMgr)
+        public CustomIdentityController(SignInManager<IdentityUser> signInMgr)
         {
             _signInMgr = signInMgr;
         }
