@@ -1,0 +1,38 @@
+@page "/Login"
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Identity
+@inject NavigationManager NavigationManager
+@attribute [AllowAnonymous]
+
+@code {
+    public class FormAuthenticationData
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public bool RememberMe { get; set; } = false;
+    }
+}
+
+<h1>"Log in"</h1>
+<EditForm class="form-signin" OnValidSubmit="OnSubmit" Model="FormData">
+    <label for="email" class="sr-only">Email</label>
+    <InputText id="email" class="form-control" @bind-Value="FormData.Email" autofocus placeholder="Email" />
+    <label for="password" class="sr-only">Password</label>
+    <InputText type="password" id="password" class="form-control" placeholder="Password" @bind-Value="FormData.Password" />
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>
+</EditForm>
+
+@code {
+    [Inject]
+    private SignInManager<IdentityUser> SignInManager { get; set; }
+    public FormAuthenticationData FormData { get; set; } = new FormAuthenticationData();
+
+    public async Task OnSubmit()
+    {
+        var query = $"?email={Uri.EscapeDataString(FormData.Email)}&" +
+            $"password={Uri.EscapeDataString(FormData.Password)}&" +
+            $"rememberMe={Uri.EscapeDataString(FormData.RememberMe.ToString())}";
+
+        NavigationManager.NavigateTo("/Login/SignIn" + query, forceLoad: true);
+    }
+}
