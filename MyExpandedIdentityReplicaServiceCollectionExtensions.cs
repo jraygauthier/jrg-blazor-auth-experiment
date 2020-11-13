@@ -1,7 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -72,7 +71,7 @@ namespace blazor_auth_individual_experiment
             // NOTE: jrg: Expand.
             // .AddIdentityCookies(o => { });
                 // "Identity.Application"
-                .AddCookie(IdentityConstants.ApplicationScheme, o =>
+                .AddMyCookieAuthenticationHandler(IdentityConstants.ApplicationScheme, o =>
                 {
                     o.LoginPath = new PathString("/Account/Login");
                     o.Events = new CookieAuthenticationEvents
@@ -81,18 +80,18 @@ namespace blazor_auth_individual_experiment
                     };
                 })
                 // "Identity.External"
-                .AddCookie(IdentityConstants.ExternalScheme, o =>
+                .AddMyCookieAuthenticationHandler(IdentityConstants.ExternalScheme, o =>
                 {
                     o.Cookie.Name = IdentityConstants.ExternalScheme;
                     o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
                 })
                 // "Identity.TwoFactorRememberMe"
-                .AddCookie(IdentityConstants.TwoFactorRememberMeScheme, o =>
+                .AddMyCookieAuthenticationHandler(IdentityConstants.TwoFactorRememberMeScheme, o =>
                 {
                     o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme;
                 })
                 // "Identity.TwoFactorUserId"
-                .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
+                .AddMyCookieAuthenticationHandler(IdentityConstants.TwoFactorUserIdScheme, o =>
                 {
                     o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
                     o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
