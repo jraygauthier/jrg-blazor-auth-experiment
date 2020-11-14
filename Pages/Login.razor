@@ -33,6 +33,7 @@
             $"password={Uri.EscapeDataString(FormData.Password)}&" +
             $"rememberMe={Uri.EscapeDataString(FormData.RememberMe.ToString())}";
 
+        // TODO: Use a real post via httpclient.
         NavigationManager.NavigateTo("/CustomIdentity/SignIn" + query, forceLoad: true);
         return Task.CompletedTask;
     }
